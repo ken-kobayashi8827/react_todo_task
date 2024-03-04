@@ -1,11 +1,7 @@
 import { Select } from '@chakra-ui/react';
+import type { ChangeStatusType } from './Todo';
 import { useState } from 'react';
-
-const TYPE_STATUS = {
-  INCOMPLETE: 0,
-  PROGRESS: 1,
-  COMPLETE: 2,
-} as const;
+import { TYPE_STATUS } from '../todoStatus';
 
 type Options = {
   label: string;
@@ -29,23 +25,24 @@ const options: Options[] = [
 
 type Props = {
   todoStatus: number;
+  changeStatus: ChangeStatusType;
+  documentId: string;
 };
 
-const StatusSelect = ({ todoStatus }: Props) => {
+const StatusSelect = ({ todoStatus, changeStatus, documentId }: Props) => {
   const [currentSelected, setCurrentSelected] = useState<number>(todoStatus);
 
-  const changeSelect = (newSelect: number): void => {
+  const handleChangeSelect = (newSelect: number): void => {
+    changeStatus(documentId, newSelect);
     setCurrentSelected(newSelect);
   };
-
-  // TODO ステータス変更処理追加
 
   return (
     <Select
       bg='white'
       w='25%'
       value={currentSelected}
-      onChange={(e) => changeSelect(parseInt(e.target.value))}
+      onChange={(e) => handleChangeSelect(parseInt(e.target.value))}
     >
       {options.map((option) => (
         <option key={option.label} value={option.value}>
