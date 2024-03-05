@@ -1,6 +1,6 @@
 import { Input, Button, VStack, Textarea } from '@chakra-ui/react';
 import { useState } from 'react';
-import type { AddTodoType } from './Todo';
+import type { AddTodoType } from '../types';
 
 type Props = {
   addTodo: AddTodoType;
