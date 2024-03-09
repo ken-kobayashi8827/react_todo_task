@@ -33,7 +33,9 @@ const todoConverter = {
       title: todo.title,
       status: todo.status,
       detail: todo.detail,
+      endDate: todo.endDate,
       createdAt: todo.createdAt,
+      updatedAt: todo.updatedAt,
     };
   },
   fromFirestore: (
@@ -47,9 +49,17 @@ const todoConverter = {
       title: data.title,
       status: data.status,
       detail: data.detail,
+      endDate:
+        data.endDate instanceof Timestamp
+          ? data.endDate.toDate().toLocaleDateString()
+          : null,
       createdAt:
         data.createdAt instanceof Timestamp
           ? data.createdAt.toDate().toLocaleDateString()
+          : null,
+      updatedAt:
+        data.updatedAt instanceof Timestamp
+          ? data.updatedAt.toDate().toLocaleDateString()
           : null,
     };
   },
@@ -59,6 +69,7 @@ const Todo = () => {
   const [todos, setTodos] = useState<TodoType[]>([]);
   //TODO: 仮数値100を指定しているので後で修正
   const [filterStatus, setFilterStatus] = useState<number>(100);
+  const [filterEndDate, setFilterEndDate] = useState<Date>(new Date());
 
   // 初回マウント時にFirebaseからTodo取得
   useEffect(() => {
@@ -80,7 +91,7 @@ const Todo = () => {
   }, []);
 
   // 追加
-  const addTodo: AddTodoType = async (inputTitle, inputDetail) => {
+  const addTodo: AddTodoType = async (inputTitle, inputDetail, endDate) => {
     // Firebaseにデータ追加
     try {
       await addDoc(collection(db, 'todos').withConverter(todoConverter), {
@@ -88,7 +99,9 @@ const Todo = () => {
         title: inputTitle,
         status: 0,
         detail: inputDetail,
+        endDate: endDate,
         createdAt: Timestamp.fromDate(new Date()),
+        updatedAt: Timestamp.fromDate(new Date()),
       });
       console.log('Success adding Document');
     } catch (e) {
@@ -120,6 +133,7 @@ const Todo = () => {
       );
       await updateDoc(todoDocumentRef, {
         status: changedStatus,
+        updatedAt: Timestamp.fromDate(new Date()),
       });
       console.log('Complate Change Todo DocumentId:', documentId);
     } catch (e) {
@@ -128,7 +142,12 @@ const Todo = () => {
   };
 
   // 編集
-  const editTodo: EditTodoType = async (documentId, editTitle, editDetail) => {
+  const editTodo: EditTodoType = async (
+    documentId,
+    editTitle,
+    editDetail,
+    editEndDate
+  ) => {
     try {
       const todoDocumentRef = doc(db, 'todos', documentId).withConverter(
         todoConverter
@@ -136,6 +155,8 @@ const Todo = () => {
       await updateDoc(todoDocumentRef, {
         title: editTitle,
         detail: editDetail,
+        endDate: editEndDate,
+        updatedAt: Timestamp.fromDate(new Date()),
       });
       console.log('Complate Change Todo DocumentId:', documentId);
     } catch (e) {
@@ -160,13 +181,25 @@ const Todo = () => {
     }
   };
 
+  // 期限フィルタリング
+  const dateFilteredTodos = (todo: TodoType) => {
+    const todoEndDate = new Date(todo.endDate);
+    return todoEndDate > filterEndDate;
+  };
+
   return (
     <>
       <TodoInput addTodo={addTodo} />
-      <Filter filterStatus={filterStatus} setFilterStatus={setFilterStatus} />
+      <Filter
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        filterEndDate={filterEndDate}
+        setFilterEndDate={setFilterEndDate}
+      />
       <VStack mt='5'>
         {todos
           .filter((todo) => statusFilteredTodos(todo))
+          .filter((todo) => dateFilteredTodos(todo))
           .map((todo) => (
             <TodoItem
               key={todo.documentId}

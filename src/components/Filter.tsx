@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { TYPE_STATUS } from '../todoStatus';
-import type { SetFilterStatus, Options } from '../types';
+import type { SetFilterStatus, SetFilterEndDate, Options } from '../types';
 import { Select, Heading, Box } from '@chakra-ui/react';
+import { ja } from 'date-fns/locale/ja';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const options: Options[] = [
   {
@@ -24,11 +28,24 @@ const options: Options[] = [
 type Props = {
   filterStatus: number;
   setFilterStatus: SetFilterStatus;
+  filterEndDate: Date;
+  setFilterEndDate: SetFilterEndDate;
 };
 
-const Filter = ({ filterStatus, setFilterStatus }: Props) => {
+const Filter = ({
+  filterStatus,
+  setFilterStatus,
+  filterEndDate,
+  setFilterEndDate,
+}: Props) => {
+  registerLocale('ja', ja);
+
   const handleChangeSelect = (newSelect: number): void => {
     setFilterStatus(newSelect);
+  };
+
+  const handleChangeEndDate = (selectedDate: Date): void => {
+    setFilterEndDate(selectedDate);
   };
 
   return (
@@ -39,6 +56,7 @@ const Filter = ({ filterStatus, setFilterStatus }: Props) => {
       <Select
         bg='white'
         w='25%'
+        mb='2'
         value={filterStatus}
         onChange={(e: React.ChangeEvent<HTMLSelectElement>): void =>
           handleChangeSelect(parseInt(e.target.value))
@@ -50,6 +68,14 @@ const Filter = ({ filterStatus, setFilterStatus }: Props) => {
           </option>
         ))}
       </Select>
+      <DatePicker
+        locale='ja'
+        selected={filterEndDate}
+        dateFormat='yyyy/MM/dd'
+        onChange={(selectedDate: Date): void =>
+          handleChangeEndDate(selectedDate)
+        }
+      />
     </Box>
   );
 };

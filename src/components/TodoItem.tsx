@@ -44,6 +44,7 @@ const TodoItem = ({ todo, deleteTodo, editTodo, changeStatus }: Props) => {
           <TodoEditInput
             title={todo.title}
             detail={todo.detail}
+            endDate={todo.endDate}
             documentId={todo.documentId}
             editTodo={editTodo}
             handleEdit={handleEdit}
@@ -62,6 +63,7 @@ const TodoItem = ({ todo, deleteTodo, editTodo, changeStatus }: Props) => {
             <Text fontSize='lg' w='100%' pl='3'>
               {todo.detail}
             </Text>
+            期日: {todo.endDate}
           </>
         )}
       </VStack>
@@ -83,7 +85,6 @@ const TodoItem = ({ todo, deleteTodo, editTodo, changeStatus }: Props) => {
             編集
           </Button>
         )}
-        <Text>{todo.createdAt}</Text>
       </HStack>
     </Box>
   );
