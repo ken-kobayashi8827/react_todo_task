@@ -60,7 +60,7 @@ const TodoEditInput = ({
           期日:{' '}
           <DatePicker
             locale='ja'
-            selected={endDate}
+            selected={editEndDate}
             dateFormat='yyyy/MM/dd'
             onChange={(selectedDate: Date): void =>
               setEditEndDate(selectedDate)

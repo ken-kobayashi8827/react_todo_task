@@ -1,6 +1,7 @@
 import TodoInput from './TodoInput';
 import TodoItem from './TodoItem';
 import Filter from './Filter';
+import Sort from './Sort';
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import {
@@ -70,6 +71,7 @@ const Todo = () => {
   //TODO: 仮数値100を指定しているので後で修正
   const [filterStatus, setFilterStatus] = useState<number>(100);
   const [filterEndDate, setFilterEndDate] = useState<Date>(new Date());
+  const [sort, setSort] = useState('id');
 
   // 初回マウント時にFirebaseからTodo取得
   useEffect(() => {
@@ -79,7 +81,7 @@ const Todo = () => {
     );
 
     // クエリ実行
-    const q = query(todosCollectionRef, orderBy('id', 'desc'));
+    const q = query(todosCollectionRef, orderBy(sort, 'desc'));
 
     onSnapshot(q, (querySnapShot) => {
       const newTodos: TodoType[] = querySnapShot.docs.map((doc) => ({
@@ -88,7 +90,7 @@ const Todo = () => {
       }));
       setTodos(newTodos);
     });
-  }, []);
+  }, [sort]);
 
   // 追加
   const addTodo: AddTodoType = async (inputTitle, inputDetail, endDate) => {
@@ -196,6 +198,7 @@ const Todo = () => {
         filterEndDate={filterEndDate}
         setFilterEndDate={setFilterEndDate}
       />
+      <Sort sort={sort} setSort={setSort} />
       <VStack mt='5'>
         {todos
           .filter((todo) => statusFilteredTodos(todo))
