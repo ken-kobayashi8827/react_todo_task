@@ -1,48 +1,62 @@
-import { Input, Button, VStack, Textarea } from '@chakra-ui/react';
+import { Input, Button, VStack, Textarea, Text } from '@chakra-ui/react';
 import { useState } from 'react';
 import type { AddTodoType } from '../types';
 import { ja } from 'date-fns/locale/ja';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './date-picker.css';
+import { useForm, SubmitHandler } from 'react-hook-form';
 
 type Props = {
   addTodo: AddTodoType;
 };
 
-const TodoInput = ({ addTodo }: Props) => {
-  const [todoInput, setTodoInput] = useState<string>('');
-  const [todoDetailInput, setTodoDetailInput] = useState<string>('');
-  const [endDate, setEndDate] = useState<Date>(new Date());
-  registerLocale('ja', ja);
+type Inputs = {
+  title: string;
+  detail: string;
+};
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    addTodo(todoInput, todoDetailInput, endDate);
-    setTodoInput('');
-    setTodoDetailInput('');
+registerLocale('ja', ja);
+
+const TodoInput = ({ addTodo }: Props) => {
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>({ mode: 'onChange' });
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    console.log(data);
+    addTodo(data.title, data.detail, endDate);
     setEndDate(new Date());
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <VStack>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <VStack alignItems='left'>
         <Input
           w='100%'
           type='text'
           placeholder='タスクを入力してください。'
-          value={todoInput}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-            setTodoInput(e.target.value)
-          }
+          {...register('title', { required: true })}
         />
+        {errors.title && (
+          <Text pl='2' color='red'>
+            ※TODOの入力は必須です。
+          </Text>
+        )}
         <Textarea
           placeholder='タスクの詳細を入力してください。'
-          value={todoDetailInput}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>): void =>
-            setTodoDetailInput(e.target.value)
-          }
+          {...register('detail', {
+            maxLength: { value: 150, message: '150文字以内で入力してください' },
+          })}
         />
+        {errors.detail && (
+          <Text pl='2' color='red'>
+            {errors.detail.message}
+          </Text>
+        )}
         <DatePicker
           locale='ja'
           selected={endDate}

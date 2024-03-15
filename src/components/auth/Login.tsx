@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { auth } from '../../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
@@ -10,38 +9,59 @@ import {
   Heading,
   Text,
 } from '@chakra-ui/react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { useState } from 'react';
+import { FirebaseError } from 'firebase/app';
+
+type Inputs = {
+  email: string;
+  password: string;
+};
 
 const Login = () => {
+  const [authError, setAuthError] = useState<string>('');
   const navigate = useNavigate();
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>({
+    mode: 'onChange',
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    console.log(data);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, data.email, data.password);
       navigate('/');
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/invalid-email':
+            setAuthError('正しいメールアドレスの形式で入力してください。');
+            break;
+          case 'auth/user-not-found':
+            setAuthError('メールアドレスかパスワードに誤りがあります。');
+            break;
+          case 'auth/wrong-password':
+            setAuthError('メールアドレスかパスワードに誤りがあります。');
+            break;
+          default:
+            setAuthError('メールアドレスかパスワードに誤りがあります。');
+            break;
+        }
+      } else {
+        console.log('Firebase Authentication エラー:', error);
+      }
     }
-  };
-
-  const handleChangeEmail = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setEmail(e.target.value);
-  };
-
-  const handleChangePassword = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    setPassword(e.target.value);
   };
 
   return (
     <div>
       <Heading>ログイン</Heading>
 
-      <form onSubmit={handleSubmit}>
-        <FormControl pt='2' isRequired>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FormControl pt='2'>
           <FormLabel>メールアドレス</FormLabel>
           <Input
             fontSize='xl'
@@ -50,10 +70,21 @@ const Login = () => {
             mb='2'
             type='email'
             placeholder='example@example.com'
-            onChange={handleChangeEmail}
+            {...register('email', {
+              required: { value: true, message: '必須項目です' },
+              pattern: {
+                value: /\S+@\S+\.\S+/,
+                message: '入力されたメールアドレスの形式が正しくありません',
+              },
+            })}
           />
+          {errors.email && (
+            <Text pl='2' color='red'>
+              {errors.email.message}
+            </Text>
+          )}
         </FormControl>
-        <FormControl pt='2' isRequired>
+        <FormControl pt='2'>
           <FormLabel>パスワード</FormLabel>
           <Input
             fontSize='xl'
@@ -62,15 +93,26 @@ const Login = () => {
             mb='2'
             type='password'
             placeholder='パスワード'
-            onChange={handleChangePassword}
+            {...register('password', {
+              required: { value: true, message: '必須項目です' },
+              minLength: { value: 8, message: '8文字以上で入力してください' },
+              maxLength: { value: 20, message: '20文字以内で入力してください' },
+            })}
           />
+          {errors.password && (
+            <Text pl='2' color='red'>
+              {errors.password.message}
+            </Text>
+          )}
         </FormControl>
         <Button type='submit' w='100%' mt='2' colorScheme='teal'>
           ログイン
         </Button>
-        <Text>
-          ユーザー登録は<Link to={'/signup'}>こちら</Link>から
-        </Text>
+        <Link to={'/signup'}>
+          <Button w='100%' mt='2' colorScheme='blue'>
+            新規登録
+          </Button>
+        </Link>
       </form>
     </div>
   );

@@ -1,10 +1,18 @@
-import { Input, Textarea, FormControl, Button, Box } from '@chakra-ui/react';
+import {
+  Input,
+  Textarea,
+  FormControl,
+  Button,
+  Box,
+  Text,
+} from '@chakra-ui/react';
 import { useState } from 'react';
 import type { EditTodoType } from '../types';
 import { ja } from 'date-fns/locale/ja';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './date-picker.css';
+import { useForm, SubmitHandler } from 'react-hook-form';
 
 type Props = {
   title: string;
@@ -15,6 +23,13 @@ type Props = {
   handleEdit: () => void;
 };
 
+type Inputs = {
+  title: string;
+  detail: string;
+};
+
+registerLocale('ja', ja);
+
 const TodoEditInput = ({
   title,
   detail,
@@ -23,19 +38,24 @@ const TodoEditInput = ({
   editTodo,
   handleEdit,
 }: Props) => {
-  const [editTitle, setEditTitle] = useState<string>(title);
-  const [editDetail, setEditDetail] = useState<string>(detail);
   const [editEndDate, setEditEndDate] = useState<Date>(new Date(endDate));
-  registerLocale('ja', ja);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>({
+    mode: 'onChange',
+    defaultValues: { title: title, detail: detail },
+  });
 
-  const handleCompleteEdit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    editTodo(documentId, editTitle, editDetail, editEndDate);
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    console.log(data);
+    editTodo(documentId, data.title, data.detail, editEndDate);
     handleEdit();
   };
 
   return (
-    <form onSubmit={handleCompleteEdit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <FormControl pt='2'>
         <Input
           fontSize='xl'
@@ -43,19 +63,25 @@ const TodoEditInput = ({
           borderColor='black'
           mb='2'
           type='text'
-          value={title}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-            setEditTitle(e.target.value)
-          }
+          {...register('title', { required: true })}
         />
+        {errors.title && (
+          <Text pl='2' color='red'>
+            ※TODOの入力は必須です。
+          </Text>
+        )}
         <Textarea
           borderColor='black'
           fontSize='lg'
-          value={detail}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>): void =>
-            setEditDetail(e.target.value)
-          }
+          {...register('detail', {
+            maxLength: { value: 150, message: '150文字以内で入力してください' },
+          })}
         />
+        {errors.detail && (
+          <Text pl='2' color='red'>
+            {errors.detail.message}
+          </Text>
+        )}
         <Box>
           期日:{' '}
           <DatePicker
