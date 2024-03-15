@@ -1,3 +1,5 @@
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 import TodoInput from './TodoInput';
 import TodoItem from './TodoItem';
 import Filter from './Filter';
@@ -17,7 +19,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { TYPE_STATUS } from '../todoStatus';
-import { VStack } from '@chakra-ui/react';
+import { VStack, Button } from '@chakra-ui/react';
 import type {
   TodoType,
   AddTodoType,
@@ -26,6 +28,7 @@ import type {
   ChangeStatusType,
   convertTodoType,
 } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 const todoConverter = {
   toFirestore: (todo: TodoType) => {
@@ -67,11 +70,17 @@ const todoConverter = {
 };
 
 const Todo = () => {
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    signOut(auth);
+    navigate('/login');
+  };
+
   const [todos, setTodos] = useState<TodoType[]>([]);
   //TODO: 仮数値100を指定しているので後で修正
   const [filterStatus, setFilterStatus] = useState<number>(100);
   const [filterEndDate, setFilterEndDate] = useState<Date>(new Date());
-  const [sort, setSort] = useState('id');
+  const [sort, setSort] = useState<string>('id');
 
   // 初回マウント時にFirebaseからTodo取得
   useEffect(() => {
@@ -213,6 +222,9 @@ const Todo = () => {
             />
           ))}
       </VStack>
+      <Button onClick={handleLogout} w='100%' mt='2' colorScheme='red'>
+        ログアウト
+      </Button>
     </>
   );
 };
