@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { TYPE_STATUS } from '../todoStatus';
 import type { SetFilterStatus, SetFilterEndDate, Options } from '../types';
 import { Select, Heading, Box } from '@chakra-ui/react';

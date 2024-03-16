@@ -30,7 +30,6 @@ const Login = () => {
   });
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    console.log(data);
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       navigate('/');
@@ -105,6 +104,11 @@ const Login = () => {
             </Text>
           )}
         </FormControl>
+        {authError && (
+          <Text pl='2' color='red'>
+            {authError}
+          </Text>
+        )}
         <Button type='submit' w='100%' mt='2' colorScheme='teal'>
           ログイン
         </Button>

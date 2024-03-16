@@ -49,7 +49,6 @@ const TodoEditInput = ({
   });
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log(data);
     editTodo(documentId, data.title, data.detail, editEndDate);
     handleEdit();
   };

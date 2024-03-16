@@ -190,8 +190,9 @@ const Todo = () => {
 
   // 期限フィルタリング
   const dateFilteredTodos = (todo: TodoType) => {
-    const todoEndDate = new Date(todo.endDate);
-    return todoEndDate > filterEndDate;
+    const todoEndDate = new Date(todo.endDate).toLocaleDateString();
+    const formatFilterEndDate = filterEndDate.toLocaleDateString();
+    return todoEndDate >= formatFilterEndDate;
   };
 
   return (

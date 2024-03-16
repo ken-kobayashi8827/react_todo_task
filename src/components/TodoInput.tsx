@@ -23,13 +23,14 @@ const TodoInput = ({ addTodo }: Props) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<Inputs>({ mode: 'onChange' });
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log(data);
     addTodo(data.title, data.detail, endDate);
     setEndDate(new Date());
+    reset();
   };
 
   return (
