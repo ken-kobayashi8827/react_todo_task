@@ -9,7 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 const options: Options[] = [
   {
     label: '全て',
-    value: 100, // TODO: 仮数値なので後で修正,
+    value: TYPE_STATUS.ALL,
   },
   {
     label: '未完了',

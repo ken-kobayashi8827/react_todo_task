@@ -3,4 +3,5 @@ export const TYPE_STATUS = {
   PROGRESS: 1,
   COMPLETE: 2,
   DELETED: 99,
+  ALL: 100,
 } as const;

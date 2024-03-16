@@ -77,19 +77,16 @@ const Todo = () => {
   };
 
   const [todos, setTodos] = useState<TodoType[]>([]);
-  //TODO: 仮数値100を指定しているので後で修正
-  const [filterStatus, setFilterStatus] = useState<number>(100);
+  const [filterStatus, setFilterStatus] = useState<number>(TYPE_STATUS.ALL);
   const [filterEndDate, setFilterEndDate] = useState<Date>(new Date());
   const [sort, setSort] = useState<string>('id');
 
   // 初回マウント時にFirebaseからTodo取得
   useEffect(() => {
-    // Cloud Firestoreデータベース内のコレクションtodosを参照
     const todosCollectionRef = collection(db, 'todos').withConverter(
       todoConverter
     );
 
-    // クエリ実行
     const q = query(todosCollectionRef, orderBy(sort, 'desc'));
 
     onSnapshot(q, (querySnapShot) => {
@@ -103,12 +100,11 @@ const Todo = () => {
 
   // 追加
   const addTodo: AddTodoType = async (inputTitle, inputDetail, endDate) => {
-    // Firebaseにデータ追加
     try {
       await addDoc(collection(db, 'todos').withConverter(todoConverter), {
         id: todos.length + 1,
         title: inputTitle,
-        status: 0,
+        status: TYPE_STATUS.INCOMPLETE,
         detail: inputDetail,
         endDate: endDate,
         createdAt: Timestamp.fromDate(new Date()),
@@ -128,7 +124,7 @@ const Todo = () => {
         todoConverter
       );
       await updateDoc(todoDocumentRef, {
-        status: 99,
+        status: TYPE_STATUS.DELETED,
       });
       console.log('Complate Delete Todo DocumentId:', documentId);
     } catch (e) {
